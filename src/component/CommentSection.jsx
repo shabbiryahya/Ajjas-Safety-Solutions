@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const Comment=({comment,onVote,onReply})=>{
   
     const {id,text,score,replies}=comment;
+
     
     const handleVote=(vote)=>{
         onVote(id,vote);
@@ -61,6 +62,7 @@ const Comment=({comment,onVote,onReply})=>{
 const CommentSection = () => {
     const[comments,setComments]=useState([]);
     const[newComment,setNewComment]=useState([]);
+    const [sortOption, setSortOption] = useState('');
 
     const addComment=()=>{
         const comment={
@@ -82,45 +84,83 @@ const CommentSection = () => {
             replies: [],
           };
       
-          const updatedComments = comments.map((comment) => {
-            if (comment.id === parentId) {
+          const updatedComments = comments.map((element) => {
+            if (element.id === parentId) {
               return {
-                ...comment,
-                replies: [...comment.replies, reply],
+                ...element,
+                replies: [...element.replies, reply],
               };
             }
-            return comment;
+            return element;
           });
       
           setComments(updatedComments);
 
     }
     const voteOnComment=(commentId,vote)=>{
-        const UpdatedComments=comments.map((element)=>{
-         
-             if(element.id===commentId)
-             {
-
-                let newScore=element.score;
-                if(vote==='upvote')
-                {
-                    newScore+=1;
-                }
-                else if(vote==="downvote")
-                {
-                   newScore-=1;
-                }
-                
-                return {
-                    ...element,
-                    score: newScore
-                }
-             }
-           return element;
-        })
-        setComments(UpdatedComments)
+      const updatedComments = comments.map((element) => {
+        if (element.id === commentId) {
+          let newScore = element.score;
+          if (vote === 'upvote') {
+            newScore += 1;
+          } else if (vote === 'downvote') {
+            newScore -= 1;
+          }
+  
+          return {
+            ...element,
+            score: newScore,
+          };
+        } else if (element.replies && element.replies.length > 0) {
+          const updatedReplies = element.replies.map((reply) => {
+            if (reply.id === commentId) {
+              let newScore = reply.score;
+              if (vote === 'upvote') {
+                newScore += 1;
+              } else if (vote === 'downvote') {
+                newScore -= 1;
+              }
+  
+              return {
+                ...reply,
+                score: newScore,
+              };
+            }
+            return reply;
+          });
+  
+          return {
+            ...element,
+            replies: updatedReplies,
+          };
+        }
+        return element;
+      });
+  
+      setComments(updatedComments);
 
     }
+    const sortComments = (option) => {
+        let sortedComments = [...comments];
+        
+    
+        if (option === 'oldest') {
+          sortedComments.sort((a, b) => a.id - b.id);
+        } else if (option === 'newest') {
+          sortedComments.sort((a, b) => b.id - a.id);
+        } else if (option === 'mostScore') {
+          sortedComments.sort((a, b) => b.score - a.score);
+        } else if (option === 'leastScore') {
+          sortedComments.sort((a, b) => a.score - b.score);
+        }
+        
+    
+        setComments(sortedComments);
+       
+       setSortOption(option);
+
+        
+      };
     
   return (
     <div  className='comment-section container py-4'>
@@ -132,6 +172,21 @@ const CommentSection = () => {
 }} />
 <button className='btn btn-primary' onClick={addComment}>Add Comment</button>
         </div>
+        <div className='sort-options mb-3'>
+        <label htmlFor='sort-select'>Sort by:</label>
+        <select
+          id='sort-select'
+          className='form-select'
+          value={sortOption}
+          onChange={(event) => sortComments(event.target.value)}
+        >
+          <option value='none'>None</option>
+          <option value='oldest'>Oldest First</option>
+          <option value='newest'>Newest First</option>
+          <option value='mostScore'>Most Score</option>
+          <option value='leastScore'>Least Score</option>
+        </select>
+      </div>
         {
             comments.map((element)=>{
 
