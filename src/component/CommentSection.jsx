@@ -1,14 +1,21 @@
 import React, { useState } from 'react'
-import Styles from "./CommentSection.module.css"
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const Comment=({comment,onVote})=>{
+const Comment=({comment,onVote,onReply})=>{
   
     const {id,text,score,replies}=comment;
     
     const handleVote=(vote)=>{
         onVote(id,vote);
     }
+
+    const handleReply = (parentId) => {
+        const replyText = prompt('Enter your reply'); 
+    
+        if (replyText) {
+          onReply(parentId, replyText);
+        }
+      };
 
     return (
 
@@ -25,6 +32,11 @@ const Comment=({comment,onVote})=>{
 
                     handleVote("downvote");
                 }}>DownVote</button>
+                <button
+          className='btn btn-outline-primary btn-sm mx-1'
+          onClick={() => handleReply(id)} >
+          Reply
+        </button>
                 </div>
                   </div>
                   {
@@ -34,7 +46,7 @@ const Comment=({comment,onVote})=>{
                          {
                             replies.map((element)=>{
 
-                           return  <Comment key={element.id} comment={element} onVote={onVote}/>
+                           return  <Comment key={element.id} comment={element} onVote={onVote} onReply={onReply}/>
                             })
                          }
                         </div>
@@ -47,7 +59,7 @@ const Comment=({comment,onVote})=>{
 }
 
 const CommentSection = () => {
-    const[comments,setComment]=useState([]);
+    const[comments,setComments]=useState([]);
     const[newComment,setNewComment]=useState([]);
 
     const addComment=()=>{
@@ -57,20 +69,30 @@ const CommentSection = () => {
             score:0,
             replies:[]
         }
-        setComment((prevComments)=>[...prevComments,comment]);
+        setComments((prevComments)=>[...prevComments,comment]);
         setNewComment("");
     }
 
     const replyOnComment=(parentId,replyText)=>{
 
-         const reply={
-
-            id:new Date().getTime(),
-            text:replyText,
-            score:0,
-            replies:[]
-
-         }
+        const reply = {
+            id: new Date().getTime(),
+            text: replyText,
+            score: 0,
+            replies: [],
+          };
+      
+          const updatedComments = comments.map((comment) => {
+            if (comment.id === parentId) {
+              return {
+                ...comment,
+                replies: [...comment.replies, reply],
+              };
+            }
+            return comment;
+          });
+      
+          setComments(updatedComments);
 
     }
     const voteOnComment=(commentId,vote)=>{
@@ -96,7 +118,7 @@ const CommentSection = () => {
              }
            return element;
         })
-        setComment(UpdatedComments)
+        setComments(UpdatedComments)
 
     }
     
@@ -106,16 +128,14 @@ const CommentSection = () => {
 
         <div className='new-comment mb-3'>
         <textarea placeholder='Write a comment...' className='form-control mb-2' value={newComment} onChange={(event)=>{
-
-setNewComment(event.target.value);
-console.log(newComment);
+            setNewComment(event.target.value);
 }} />
 <button className='btn btn-primary' onClick={addComment}>Add Comment</button>
         </div>
         {
             comments.map((element)=>{
 
-            return <Comment key={element.id} comment={element} onVote={voteOnComment}/>
+            return <Comment key={element.id} comment={element} onVote={voteOnComment} onReply={replyOnComment}  />
 
             })
         }
