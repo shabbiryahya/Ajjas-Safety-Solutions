@@ -57,6 +57,7 @@ To run the comment section locally, follow these steps:
 
 Contributions are welcome! If you have any suggestions, improvements, or bug fixes, please create a pull request. For major changes, please open an issue first to discuss what you would like to change.
 
+[Deployed Link](https://comment-section-ajjas-masai.netlify.app/)
 
 
 
